@@ -1,8 +1,7 @@
-use std::env;
-use std::path::PathBuf;
-
 use rustyline::Editor;
 use rustyline::history::FileHistory;
+use std::env;
+use std::path::PathBuf;
 use time::format_description::FormatItem;
 use time::macros::format_description;
 use time::{OffsetDateTime, PrimitiveDateTime};
@@ -16,7 +15,9 @@ static FORMATS: &[&[FormatItem<'static>]] = &[
     format_description!("[year]/[month]/[day] [hour]:[minute]:[second].[subsecond]"),
     format_description!("[year]-[month]-[day]T[hour]:[minute]:[second]Z"),
     format_description!("[year]-[month]-[day]T[hour]:[minute]:[second][offset_hour]"),
-    format_description!("[year]-[month]-[day]T[hour]:[minute]:[second][offset_hour]:[offset_minute]"),
+    format_description!(
+        "[year]-[month]-[day]T[hour]:[minute]:[second][offset_hour]:[offset_minute]"
+    ),
 ];
 
 fn parse_any(s: &str) -> Option<OffsetDateTime> {
