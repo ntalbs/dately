@@ -1,5 +1,8 @@
-use std::io::{self, Write};
+use std::env;
+use std::path::PathBuf;
 
+use rustyline::Editor;
+use rustyline::history::FileHistory;
 use time::format_description::FormatItem;
 use time::macros::format_description;
 use time::{OffsetDateTime, PrimitiveDateTime};
@@ -32,32 +35,33 @@ fn epoch_millis(dt: OffsetDateTime) -> i128 {
     dt.unix_timestamp_nanos() / 1_000_000
 }
 
+const HISTORY_FILE: &str = ".dately_history";
+
+fn history_path() -> PathBuf {
+    let home_dir = env::var("HOME").map(PathBuf::from).ok().unwrap();
+    home_dir.join(HISTORY_FILE)
+}
+
 fn main() {
     println!("Enter date-time string to get Epoch millis.");
 
-    loop {
-        let mut buf = String::new();
-        print!("> ");
+    let mut editor = Editor::<(), FileHistory>::new().unwrap();
+    if editor.load_history(&history_path()).is_err() {
+        // No history file yet - this is fine
+    }
 
-        io::stdout().flush().unwrap();
-
-        let nread = io::stdin()
-            .read_line(&mut buf)
-            .expect("Failed to read line.");
-        let input = buf.trim();
-
-        if nread == 0 {
-            println!();
-            break;
-        }
+    while let Ok(input) = editor.readline("> ") {
+        editor.add_history_entry(input.as_str()).unwrap();
 
         if input.is_empty() {
             continue;
         }
 
-        match parse_any(input) {
+        match parse_any(&input) {
             Some(dt) => println!("  {}", epoch_millis(dt)),
             None => eprintln!("Unidentified date-time format."),
         }
     }
+
+    editor.save_history(&history_path()).unwrap();
 }
