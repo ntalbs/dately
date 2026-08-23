@@ -14,6 +14,7 @@ static FORMATS: &[&[FormatItem<'static>]] = &[
     format_description!("[year]/[month]/[day] [hour]:[minute]:[second]"),
     format_description!("[year]/[month]/[day] [hour]:[minute]:[second].[subsecond]"),
     format_description!("[year]-[month]-[day]T[hour]:[minute]:[second]Z"),
+    format_description!("[year]-[month]-[day]T[hour]:[minute]:[second].[subsecond]Z"),
     format_description!("[year]-[month]-[day]T[hour]:[minute]:[second][offset_hour]"),
     format_description!(
         "[year]-[month]-[day]T[hour]:[minute]:[second][offset_hour]:[offset_minute]"
@@ -52,15 +53,16 @@ fn main() {
     }
 
     while let Ok(input) = editor.readline("> ") {
-        editor.add_history_entry(input.as_str()).unwrap();
+        let input = input.trim();
+        editor.add_history_entry(input).unwrap();
 
         if input.is_empty() {
             continue;
         }
 
-        match parse_any(&input) {
-            Some(dt) => println!("  {}", epoch_millis(dt)),
-            None => eprintln!("Unidentified date-time format."),
+        match parse_any(input) {
+            Some(dt) => println!("  {} ({})", epoch_millis(dt), dt.offset()),
+            None => eprintln!("Unidentified date-time format. {}", input),
         }
     }
 
